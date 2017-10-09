@@ -43,3 +43,98 @@ regex
 	console.log( string.match(regex) );
 	// => ["123", "1234", "12345", "12345"]
 ```
+其中正则 /\d{2,5}/，表示数字连续出现 2 到 5 次。会匹配 2 位、3 位、4 位、5 位连续数字。
+但是其是贪婪的，它会尽可能多的匹配。你能给我 6 个，我就要 5 个。你能给我 3 个，我就要 3 个。
+而惰性匹配，就是尽可能少的匹配：
+```javascript
+	var regex = /\d{2,5}?/g;
+	var string = "123 1234 12345 123456";
+	console.log( string.match(regex) );
+	//第二、三个字符串命中了两组，第四个字符串命中了3组
+	// => ["12", "12", "34", "12", "34", "12", "34", "56"]
+```
+其中 /\d{2,5}?/ 表示，虽然 2 到 5 次都行，当 2 个就够的时候，就不再往下尝试了。
+
+多选分支
+-
+一个模式可以实现横向和纵向模糊匹配。而多选分支可以支持多个子模式任选其一。具体形式如下：(p1|p2|p3)，其中 p1、p2 和 p3 是子模式，用 |（管道符）分隔，表示其中任何之一。例如要匹配字符串 "good" 和 "nice" 可以使用 /good|nice/。
+但有个事实我们应该注意，比如我用 /good|goodbye/，去匹配 "goodbye" 字符串时，结果是 "good"：
+```javascript
+	var regex = /good|goodbye/g;
+	var string = "goodbye";
+	console.log( string.match(regex) );
+	// => ["good"]
+	
+	var regex = /goodbye|good/g;
+	var string = "goodbye";
+	console.log( string.match(regex) );
+	// => ["goodbye"]
+```
+分支结构也是惰性的，即当前面的匹配上了，后面的就不再尝试了。
+
+匹配 16 进制颜色值
+-
+要求匹配
+```
+	#ffbbad
+	#Fc01DF
+	#FFF
+	#ffE
+```
+正则如下:
+```javascript
+	var regex = /#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})/g;
+	var string = "#ffbbad #Fc01DF #FFF #ffE";
+	console.log( string.match(regex) );
+	// => ["#ffbbad", "#Fc01DF", "#FFF", "#ffE"]
+```
+
+匹配时间
+-
+要求匹配：
+```
+	23:59
+	02:07
+```
+正则如下：
+```javascript
+	var regex = /^([01][0-9]|[2][0-3]):[0-5][0-9]$/;
+	console.log( regex.test("23:59") );
+	console.log( regex.test("02:07") );
+	// => true
+	// => true
+```
+如果也要求匹配 "7:9"，也就是说时分前面的 "0" 可以省略。
+```javascript
+	var regex = /^(0?[0-9]|1[0-9]|[2][0-3]):(0?[0-9]|[1-5][0-9])$/;
+	console.log( regex.test("23:59") );
+	console.log( regex.test("02:07") );
+	console.log( regex.test("7:9") );
+	// => true
+	// => true
+	// => true
+```
+
+匹配日期
+-
+要求匹配：
+```
+	2017-06-10
+```
+正则如下：
+```javascript
+	var regex = /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+	console.log( regex.test("2017-06-10") );
+	// => true
+```
+
+window 操作系统文件路径
+-
+要求匹配：
+```
+	2017-06-10
+```
+正则如下：
+```javascript
+	
+```
