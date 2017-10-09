@@ -132,9 +132,52 @@ window 操作系统文件路径
 -
 要求匹配：
 ```
-	2017-06-10
+	F:\study\javascript\regex\regular expression.pdf
+	F:\study\javascript\regex\
+	F:\study\javascript
+	F:\
 ```
+整体模式是:
+```
+	盘符:\文件夹\文件夹\文件夹\
+```
+其中匹配 "F:\"，需要使用[a-zA-Z]:\\，其中盘符不区分大小写，注意 \ 字符需要转义。
+文件名或者文件夹名，不能包含一些特殊字符，此时我们需要排除字符组 `[^\\:*<>|"?\r\n/]`来表示合法
+字符。
+另外它们的名字不能为空名，至少有一个字符，也就是要使用量词 +。因此匹配 文件夹\，可用
+`[^\\:*<>|"?\r\n/]+\\`。
 正则如下：
 ```javascript
-	
+	var regex = /^[a-zA-Z]:\\([^\\:*<>|"?\r\n/]+\\)*([^\\:*<>|"?\r\n/]+)?$/;
+	console.log( regex.test("F:\\study\\javascript\\regex\\regular expression.pdf") );
+	// => true
+```
+`*`代表任意次
+
+匹配 id
+-
+要求从
+```
+	<div id="container" class="main"></div>
+```
+提取出 id="container"。
+可能刚开始想到的正则是
+```javascript
+	var regex = /id=".*"/
+```
+但是因为`.`是通配符，本身就匹配双引号的，而量词`*`又是贪婪的，当遇到 container 后面双引号时，是不会
+停下来，会继续匹配，直到遇到最后一个双引号为止。
+解决之道，可以使用惰性匹配：
+```javascript
+	var regex = /id=".*?"/
+	var string = '<div id="container" class="main"></div>';
+	console.log(string.match(regex)[0]);
+	// => id="container"
+```
+当然，这样也会有个问题。效率比较低，因为其匹配原理会涉及到“回溯”这个概念，可以把"号去掉，优化如下：
+```javascript
+	var regex = /id="[^"]*"/
+	var string = '<div id="container" class="main"></div>';
+	console.log(string.match(regex)[0]);
+	// => id="container"
 ```
