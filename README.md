@@ -181,3 +181,101 @@ window 操作系统文件路径
 	console.log(string.match(regex)[0]);
 	// => id="container"
 ```
+
+位置匹配
+-
+正则表达式是匹配模式，要么匹配字符，要么匹配位置。位置（锚）是相邻字符之间的位置，在 ES5 中，共有 6 个锚：
+```
+	^、$、\b、\B、(?=p)、(?!p)
+```
+^（脱字符）匹配开头，在多行匹配中匹配行开头。
+$（美元符号）匹配结尾，在多行匹配中匹配行结尾。比如我们把字符串的开头和结尾用 "#" 替换（位置可以替换成字符的）：
+```javascript
+	var result = "hello".replace(/^|$/g, '#');
+	console.log(result);
+	// => "#hello#"
+```
+多行匹配模式（即有修饰符 m）时，二者是行的概念，这一点需要我们注意（\n表示换行）：
+```javascript
+	var result = "I\nlove\njavascript".replace(/^|$/gm, '#');
+	console.log(result);
+	/*
+	#I#
+	#love#
+	#javascript#
+	*/
+```
+\b 是单词边界，具体就是 \w 与 \W 之间的位置，也包括 \w 与 ^ 之间的位置，和 \w 与 $ 之间的位置。
+比如考察文件名 "[JS] Lesson_01.mp4" 中的 \b，如下：
+```javascript
+	var result = "[JS] Lesson_01.mp4".replace(/\b/g, '#');
+	console.log(result);
+	// => "[#JS#] #Lesson_01#.#mp4#"
+```
+\B 就是 \b 的反面的意思，非单词边界。例如在字符串中所有位置中，扣掉 \b，剩下的都是 \B 的。
+比如上面的例子，把所有 \B 替换成 "#"：
+```javascript
+	var result = "[JS] Lesson_01.mp4".replace(/\B/g, '#');
+	console.log(result);
+	// => "#[J#S]# L#e#s#s#o#n#_#0#1.m#p#4"
+```
+(?=p)，其中 p 是一个子模式，即 p 前面的位置，或者说，该位置后面的字符要匹配 p
+```javascript
+	var result = "hello".replace(/(?=l)/g, '#');
+	console.log(result);
+	//l前面的位置
+	// => "he#l#lo"
+```
+而 (?!p) 就是 (?=p) 的反面意思，比如：
+```javascript
+	var result = "hello".replace(/(?!l)/g, '#');
+	console.log(result);
+	// => "#h#ell#o#"
+```
+二者的学名分别是 positive lookahead 和 negative lookahead。
+中文翻译分别是正向先行断言和负向先行断言。
+也有书上把这四个东西，翻译成环视，即看看右边和看看左边。
+
+位置的特性
+-
+对于位置的理解，我们可以理解成空字符 ""。
+```
+	"hello" == "" + "h" + "" + "e" + "" + "l" + "" + "l" + "o" + "";	
+```
+也等价于：
+```
+	"hello" == "" + "" + "hello"	
+```
+因此，把 /\^hello$/ 写成 /^^hello$$$/，是没有任何问题的：
+```javascript
+	var result = /^^hello$$$/.test("hello");
+	console.log(result);
+	// => true
+```
+
+数字的千位分隔符表示法
+-
+比如把 "12345678"，变成 "12,345,678"。
+可见是需要把相应的位置替换成 ","。
+```javascript
+	var result = "12345678".replace(/(?=\d{3}$)/g, ',')
+	console.log(result);
+	// => "12345,678"
+```
+(?=\d{3}$) 匹配 \d{3}$ 前面的位置。而 \d{3}$ 匹配的是目标字符串最后那 3 位数字。
+因为逗号出现的位置，要求后面 3 个数字一组，也就是 \d{3} 至少出现一次。
+此时可以使用量词 +：
+```javascript
+	var result = "12345678".replace(/(?=(\d{3})+$)/g, ',')
+	console.log(result);
+	// => "12,345,678"
+```
+上面的正则，仅仅表示把从结尾向前数，一但是 3 的倍数，就把其前面的位置替换成逗号。因此会出
+现问题。
+怎么解决呢？我们要求匹配的到这个位置不能是开头。
+```javascript
+	var regex = /(?!^)(?=(\d{3})+$)/g;
+	var result = "12345678".replace(regex, ',')
+	console.log(result);
+	// => "12,345,678"
+```	
